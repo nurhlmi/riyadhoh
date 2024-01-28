@@ -19,11 +19,11 @@ import {
 } from '@mui/material';
 import {
   ChevronRightRounded,
-  ClearRounded,
   CancelRounded,
+  ExpandMoreRounded,
+  HighlightOffRounded,
   PinDropRounded,
   SearchRounded,
-  ExpandMoreRounded,
 } from '@mui/icons-material';
 import axios from 'axios';
 import moment from 'moment';
@@ -40,14 +40,17 @@ export default function CountdownSholat(props) {
   const [error, setError] = useState(false);
   const [complete, setComplete] = useState(false);
 
+  // Dokumentasi API Muslim
+  // https://documenter.getpostman.com/view/841292/2s9YsGittd
+  const baseUrl = 'https://api.myquran.com/v2/';
+
   // Fetch jadwal sholat
   useEffect(() => {
     setComplete(false);
-    const apiURL = `https://api.myquran.com/v1/sholat/jadwal/${params.location}/${params.date}`;
-    fetch(apiURL)
+    fetch(`${baseUrl}sholat/jadwal/${params.location}/${params.date}`)
       .then((res) => res.json())
       .then(({ data }) => {
-        //   console.log(data);
+        // console.log(data);
         delete data.jadwal.tanggal;
         delete data.jadwal.imsak;
         delete data.jadwal.terbit;
@@ -113,11 +116,13 @@ export default function CountdownSholat(props) {
   const [search, setSearch] = useState('');
   const [location, setLocation] = useState();
   const getLocation = async () => {
-    await axios.get(`https://api.myquran.com/v1/sholat/kota/cari/${search.length > 0 ? search : 'a'}`).then((res) => {
-      //   console.log(res.data.data);
-      const value = res.data.data;
-      setLocation(value !== undefined ? value : null);
-    });
+    if (search !== '') {
+      await axios.get(`${baseUrl}sholat/kota/cari/${search}`).then((res) => {
+        // console.log(res.data.data);
+        const value = res.data.data;
+        setLocation(value !== undefined ? value : null);
+      });
+    }
   };
 
   useEffect(() => {
@@ -136,58 +141,56 @@ export default function CountdownSholat(props) {
   };
 
   return (
-    <>
-      <Card {...props}>
-        <CardContent>
-          <Grid container spacing={3}>
-            <Grid item xs={3} align="center">
-              <img src={`/static/theme2/mosque.png`} alt="Ramadhan" />
-            </Grid>
-            {complete ? (
-              <>
-                {!error ? (
-                  <Grid item xs>
-                    <Typography variant="body2">{next.countDown}</Typography>
-                    <Typography variant="h4" textTransform="capitalize" gutterBottom>
-                      {next.name}, {data?.jadwal[next.name]}
-                    </Typography>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      startIcon={<PinDropRounded color="primary" fontSize="small" />}
-                      onClick={handleDialog}
-                    >
-                      {data?.lokasi.toLowerCase()}
-                    </Button>
-                  </Grid>
-                ) : (
-                  <Grid item xs>
-                    <Typography gutterBottom>Gagal memuat data</Typography>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() =>
-                        setParams({
-                          ...params,
-                          location: '1204',
-                        })
-                      }
-                    >
-                      Muat ulang
-                    </Button>
-                  </Grid>
-                )}
-              </>
-            ) : (
-              <Grid item xs>
-                <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
-                <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
-                <Skeleton variant="text" sx={{ fontSize: '1rem', py: 1, mt: 0.4 }} width="50%" />
-              </Grid>
-            )}
+    <Card {...props}>
+      <CardContent>
+        <Grid container spacing={3}>
+          <Grid item xs={3} align="center">
+            <img src={`/static/theme2/mosque.png`} alt="Ramadhan" />
           </Grid>
-        </CardContent>
-      </Card>
+          {complete ? (
+            <>
+              {!error ? (
+                <Grid item xs>
+                  <Typography variant="body2">{next.countDown}</Typography>
+                  <Typography variant="h4" textTransform="capitalize" gutterBottom>
+                    {next.name}, {data?.jadwal[next.name]}
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<PinDropRounded color="primary" fontSize="small" />}
+                    onClick={handleDialog}
+                  >
+                    {data?.lokasi.toLowerCase()}
+                  </Button>
+                </Grid>
+              ) : (
+                <Grid item xs>
+                  <Typography gutterBottom>Gagal memuat data</Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() =>
+                      setParams({
+                        ...params,
+                        location: '1204',
+                      })
+                    }
+                  >
+                    Muat ulang
+                  </Button>
+                </Grid>
+              )}
+            </>
+          ) : (
+            <Grid item xs>
+              <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
+              <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
+              <Skeleton variant="text" sx={{ fontSize: '1rem', py: 1, mt: 0.4 }} width="50%" />
+            </Grid>
+          )}
+        </Grid>
+      </CardContent>
       <Dialog
         open={dialog}
         onClose={handleDialog}
@@ -223,7 +226,7 @@ export default function CountdownSholat(props) {
                       document.getElementById('search').focus();
                     }}
                   >
-                    <ClearRounded />
+                    <CancelRounded fontSize="small" />
                   </IconButton>
                 </InputAdornment>
               ),
@@ -234,7 +237,7 @@ export default function CountdownSholat(props) {
         </Stack>
         <DialogContent dividers sx={{ p: 0 }}>
           {location !== undefined ? (
-            location !== null ? (
+            location.length > 0 ? (
               <Card sx={{ borderRadius: 0 }}>
                 {location.map(
                   (value, index) =>
@@ -262,13 +265,16 @@ export default function CountdownSholat(props) {
               </Card>
             ) : (
               <Stack alignItems="center" justifyContent="center" spacing={1} pt={10}>
-                <CancelRounded fontSize="large" />
-                <Typography variant="body2">
-                  Pencarian "<b>{search}</b>" tidak ditemukan.
+                <HighlightOffRounded style={{ fontSize: 48 }} />
+                <Typography variant="h6" align="center">
+                  Pencarian "{search}" tidak ditemukan
+                </Typography>
+                <Typography variant="body2" align="center" color="text.secondary">
+                  Pastikan nama kabupaten/kota dieja dengan benar.
                 </Typography>
               </Stack>
             )
-          ) : (
+          ) : search !== '' ? (
             <Stack spacing={4} p={2}>
               <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
               <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
@@ -281,9 +287,17 @@ export default function CountdownSholat(props) {
               <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
               <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
             </Stack>
+          ) : (
+            <Stack alignItems="center" justifyContent="center" spacing={1} pt={10}>
+              <SearchRounded style={{ fontSize: 48 }} />
+              <Typography variant="h6">Cari kabupaten/kota</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Cari lokasi kabupaten/kota Anda.
+              </Typography>
+            </Stack>
           )}
         </DialogContent>
       </Dialog>
-    </>
+    </Card>
   );
 }
