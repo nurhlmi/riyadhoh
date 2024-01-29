@@ -120,7 +120,7 @@ export default function CountdownSholat(props) {
       await axios.get(`${baseUrl}sholat/kota/cari/${search}`).then((res) => {
         // console.log(res.data.data);
         const value = res.data.data;
-        setLocation(value !== undefined ? value : null);
+        setLocation(value !== undefined ? value : []);
       });
     }
   };
