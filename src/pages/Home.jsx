@@ -1,11 +1,16 @@
-import { useState } from 'react';
+/* eslint-disable no-alert */
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useEffect, useState } from 'react';
 import { Box, Card, CardActionArea, CardContent, CardMedia, Container, Grid, Stack, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import CountdownSholat from '../sections/CountdownSholat';
-// import CardSholat from '../sections/CardSholat';
 import Page from '../components/Page';
 
 export default function Home() {
+  const [data, setData] = useState({
+    name: localStorage.getItem('name'),
+    theme: localStorage.getItem('theme'),
+  });
   const [menu] = useState([
     {
       title: 'Jadwal Sholat',
@@ -42,16 +47,35 @@ export default function Home() {
     },
   ]);
 
+  const handlePrompt = () => {
+    const name = prompt('Masukkan nama anda');
+    if (name) {
+      localStorage.setItem('name', name);
+      setData({
+        ...data,
+        name,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (data.name === null) {
+      handlePrompt();
+    }
+  }, [data]);
+
   return (
     <Page title="Beranda" bottomNavigation>
       <Box bgcolor="primary.main" color="#fff" height={200} pt={5}>
         <Container>
-          <Stack direction="row" justifyContent="space-between">
-            <Stack>
+          <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
+            <Stack onClick={handlePrompt}>
               <Typography fontWeight="bold">Assalamu'alaikum</Typography>
-              <Typography variant="h4" fontWeight="bold" mb={5}>
-                Nur Hilmi
-              </Typography>
+              {data.name !== null && (
+                <Typography variant="h4" fontWeight="bold">
+                  {data.name}
+                </Typography>
+              )}
             </Stack>
             <Stack direction="row">
               <img src={`/static/theme2/muslimin.png`} alt="Muslimin" width={50} height={50} />
@@ -63,7 +87,6 @@ export default function Home() {
       <Container>
         <Stack spacing={3} mb={3}>
           <CountdownSholat sx={{ mt: -9 }} />
-          {/* <CardSholat /> */}
         </Stack>
         <Grid container spacing={2} mb={3}>
           {menu.map((value, index) => (
@@ -82,9 +105,6 @@ export default function Home() {
           ))}
         </Grid>
         <Stack>
-          {/* <Typography variant="h6" gutterBottom>
-            Info Kajian
-          </Typography> */}
           <Card>
             <CardActionArea>
               <CardMedia component="img" image="/static/kajian.webp" />

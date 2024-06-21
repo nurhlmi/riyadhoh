@@ -1,10 +1,11 @@
+/* eslint-disable no-unused-vars */
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet-async';
 import { forwardRef } from 'react';
 
 import { AppBar, Box, IconButton, Toolbar, Typography } from '@mui/material';
 import { ArrowBackRounded } from '@mui/icons-material';
-import AppBottomNavigation from '../sections/AppBottomNavigation';
+// import AppBottomNavigation from '../sections/AppBottomNavigation';
 
 const Page = forwardRef(
   ({ children, title = '', headerNavigation = false, bottomNavigation = false, meta, ...other }, ref) => (
@@ -36,7 +37,7 @@ const Page = forwardRef(
           </AppBar>
         )}
         {children}
-        {bottomNavigation && <AppBottomNavigation />}
+        {/* {bottomNavigation && <AppBottomNavigation />} */}
       </Box>
     </>
   )
